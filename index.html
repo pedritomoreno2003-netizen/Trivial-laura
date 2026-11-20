@@ -199,6 +199,7 @@ const SAMPLE={name:'Lucía',secs:20,teams:['Equipo Rojo','Equipo Azul','Equipo A
 SAMPLE.img.forEach(x=>x.src='');
 const clone=o=>JSON.parse(JSON.stringify(o));
 let D;try{D=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+const fromStore=!!(D&&D.quiz);
 if(!D||!D.quiz)D=clone(SAMPLE);D.sample=D.sample??true;
 let videoURL='',saveWarn='';
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(D));saveWarn=''}catch(e){saveWarn='No se ha podido guardar en este navegador (quizá las fotos ocupan demasiado). Usa “Copia de seguridad”.'}};
@@ -483,6 +484,7 @@ const syncTop=()=>{document.getElementById('bHome').hidden=view==='home'||role==
 new MutationObserver(syncTop).observe(app,{childList:true});
 const wantPlayer=location.hash==='#jugar';
 if(wantPlayer)becomePlayer();else home();
+if(!fromStore&&/^https?:/.test(location.protocol)){fetch('data.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(n=>{if(n&&n.quiz){D=n;D.sample=false;if(view==='home')home()}}).catch(()=>{})}
 (async()=>{
   try{const user=await claude.use('user');if(user&&!user.isOwner()&&role!=='player')becomePlayer()}catch(x){}
   try{room=await claude.use('room')}catch(x){room=null}

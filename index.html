@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trivial de la amiga</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* VOICE: fiesta entre amigos, concurso de tele en el salón, ruidoso y claro de lejos
+   IDEA: plató de concurso: marcador, pulsadores de colores con forma, cartel del bloque
+   PICTURE: las cuatro losas de respuesta grandes y el tablero de letras del ahorcado
+   COLOUR and TYPE: frambuesa de fondo, paneles blancos, amarillo de foco; Lilita One + Nunito
+   LAYOUT: una pantalla por paso, pensada para proyectar; se apila en móvil */
+:root{color-scheme:light dark;--bg:light-dark(#c2185b,#5c0a2c);--bg2:light-dark(#a3124b,#430720);--ink:#fff;--panel:light-dark(#fff,#1d0b14);--pink:light-dark(#2a0b19,#fbe7ef);--sub:light-dark(#6d4a5a,#c9a5b4);--line:light-dark(#ecd4de,#3d1a2a);--y:#ffd23f;--a0:#e5383b;--a1:#1d6fd8;--a2:#e8a100;--a3:#1f9d55}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background-color:var(--bg2);background-image:radial-gradient(120% 80% at 50% -10%,color-mix(in srgb,var(--bg) 70%,#fff 30%) 0,var(--bg) 55%,var(--bg2) 100%);background-attachment:fixed;color:var(--ink);font:17px/1.5 Nunito,system-ui,sans-serif;min-height:100vh;overflow-x:clip}
+h1,h2,h3,.disp{font-family:"Lilita One",Nunito,sans-serif;font-weight:400;line-height:1.05;text-wrap:balance;margin:0}
+button,input,textarea,select{font:inherit;font-size:16px}
+button{cursor:pointer;border:0;border-radius:14px;min-height:44px;padding:10px 18px;font-weight:800;background:#fff;color:#2a0b19}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+.btn-y{background:var(--y);color:#2a0b19;box-shadow:0 5px 0 #b8901b}
+.btn-y:active{transform:translateY(3px);box-shadow:0 2px 0 #b8901b}
+.btn-g{background:rgba(255,255,255,.14);color:#fff}
+.wrap{max-width:1240px;margin:0 auto;padding:clamp(16px,3vw,40px) max(4vw,16px)}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.top .sp{flex:1}
+.logo{font-family:"Lilita One";font-size:22px;letter-spacing:.5px}
+.small{font-size:14px;opacity:.85}
+/* home */
+.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:clamp(20px,4vw,56px);align-items:center;margin-top:clamp(16px,4vw,48px)}
+.hero h1{font-size:clamp(40px,6vw,72px)}
+.hero h1 span{color:var(--y)}
+.lead{font-size:19px;max-width:34ch;margin:14px 0 24px}
+.teams{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 18px}
+.team{display:flex;align-items:center;background:rgba(255,255,255,.14);border-radius:12px;padding:4px 4px 4px 12px}
+.team input{background:transparent;border:0;color:#fff;font-weight:800;width:9em;padding:8px 0}
+.team button{min-height:36px;padding:4px 10px;background:transparent;color:#fff;font-size:20px;line-height:1}
+.board{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.blk{border-radius:20px;padding:20px;min-height:150px;display:flex;flex-direction:column;justify-content:space-between;color:#fff;box-shadow:0 8px 0 rgba(0,0,0,.22),inset 0 2px 0 rgba(255,255,255,.25);position:relative;overflow:hidden}
+.blk svg{position:absolute;right:-14px;bottom:-14px;width:96px;height:96px;opacity:.28}
+.blk b{font-family:"Lilita One";font-size:44px;line-height:1}
+.blk h3{font-size:22px}
+.c0{background:var(--a0)}.c1{background:var(--a1)}.c2{background:var(--a2)}.c3{background:var(--a3)}
+.note{font-size:14px;opacity:.85;margin-top:14px}
+/* game */
+.hud{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+.pill{background:rgba(0,0,0,.2);border-radius:99px;padding:6px 14px;font-weight:800;font-size:15px;white-space:nowrap}
+.mini{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.mini span{background:rgba(255,255,255,.14);border-radius:99px;padding:4px 12px;font-size:14px;font-weight:800;white-space:nowrap}
+.qcard{background:var(--panel);color:var(--pink);border-radius:24px;padding:clamp(18px,3vw,34px);text-align:center;box-shadow:0 10px 0 rgba(0,0,0,.2)}
+.qcard h2{font-size:clamp(26px,3.6vw,46px)}
+.qrow{display:flex;gap:18px;align-items:center}
+.qrow h2{flex:1}
+.timer{--p:100;flex:none;width:76px;height:76px;border-radius:50%;background:conic-gradient(var(--y) calc(var(--p)*1%),var(--line) 0);display:grid;place-items:center}
+.timer i{font-style:normal;width:58px;height:58px;border-radius:50%;background:var(--panel);display:grid;place-items:center;font-family:"Lilita One";font-size:28px;color:var(--pink)}
+.qimg{margin:18px auto 0;max-height:42vh;max-width:100%;border-radius:16px;display:block;object-fit:contain}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+.ans{display:flex;align-items:center;gap:16px;text-align:left;color:#fff;border-radius:18px;padding:18px 20px;min-height:96px;font-size:clamp(18px,2.2vw,26px);font-weight:900;box-shadow:0 6px 0 rgba(0,0,0,.25);transition:opacity .3s,transform .3s}
+.ans svg{flex:none;width:40px;height:40px}
+.let{font-style:normal;font-family:"Lilita One";font-weight:400;flex:none;width:1.7em;height:1.7em;border-radius:12px;background:#fff;color:#2a0b19;display:grid;place-items:center;font-size:1.35em;box-shadow:0 3px 0 rgba(0,0,0,.25)}
+.sol .let{width:1.5em;height:1.5em;border-radius:7px;font-size:16px}
+.ans.off{opacity:.25;transform:scale(.97)}
+.ans.ok{outline:5px solid #fff;outline-offset:-5px;transform:scale(1.02)}
+.ans.ok::after{content:"✓";margin-left:auto;font-size:34px}
+.ctl{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:20px;align-items:center}
+.award{background:rgba(0,0,0,.2);border-radius:18px;padding:16px;margin-top:18px;text-align:center}
+.award p{margin:0 0 10px;font-weight:800}
+.tg{display:inline-flex;margin:4px;background:rgba(255,255,255,.14);color:#fff}
+.tg.on{background:var(--y);color:#2a0b19}
+/* ahorcado */
+.clue{font-size:clamp(19px,2.2vw,26px);font-weight:800;max-width:40ch;margin:10px auto 0}
+.word{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 8px;margin:26px 0 6px}
+.word .gap{width:26px}
+.tile{width:clamp(38px,6vw,68px);height:clamp(50px,8vw,86px);border-radius:12px;background:var(--line);display:grid;place-items:center;font-family:"Lilita One";font-size:clamp(28px,4.6vw,54px);color:var(--pink);border-bottom:5px solid color-mix(in srgb,var(--line) 70%,#000 30%)}
+.tile.s{background:var(--y);color:#2a0b19;border-color:#b8901b}
+.tile.new{animation:pop .45s}
+@keyframes pop{0%{transform:scale(.4) rotate(-8deg)}70%{transform:scale(1.12)}100%{transform:none}}
+/* intro / marcador */
+.intro{text-align:center;padding:clamp(30px,8vh,90px) 0}
+.intro .num{display:inline-grid;place-items:center;width:120px;height:120px;border-radius:30px;font-family:"Lilita One";font-size:64px;box-shadow:0 8px 0 rgba(0,0,0,.25);margin-bottom:22px}
+.intro h1{font-size:clamp(40px,6vw,76px)}
+.intro p{font-size:20px;max-width:40ch;margin:14px auto 28px}
+.score h1{text-align:center;font-size:clamp(36px,5vw,60px);margin-bottom:24px}
+.row{display:grid;grid-template-columns:2.2em minmax(0,9em) minmax(0,1fr) 5em;gap:12px;align-items:center;margin:10px 0;font-weight:900;font-size:20px}
+.row .bar{height:44px;border-radius:12px;background:rgba(0,0,0,.2);overflow:hidden}
+.row .bar i{display:block;height:100%;background:var(--y);border-radius:12px;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.row .pts{text-align:right;font-variant-numeric:tabular-nums}
+.podium{display:flex;justify-content:center;align-items:flex-end;gap:14px;margin:30px 0}
+.pod{width:min(30%,200px);text-align:center;font-weight:900}
+.pod div{border-radius:18px 18px 0 0;display:grid;place-items:center;font-family:"Lilita One";font-size:54px;box-shadow:inset 0 3px 0 rgba(255,255,255,.3)}
+.vid{width:100%;max-height:60vh;border-radius:18px;background:#000;display:block;margin-top:16px}
+/* editor */
+.ed{background:var(--panel);color:var(--pink);border-radius:24px;padding:clamp(16px,3vw,30px);margin-top:18px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.tabs button{background:var(--line);color:var(--pink)}
+.tabs button.on{background:var(--bg);color:#fff}
+.it{border:2px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px}
+.ith{display:flex;justify-content:space-between;align-items:center;font-weight:900;margin-bottom:8px}
+.ith button{background:transparent;color:var(--sub);min-height:36px;padding:4px 10px}
+.ed input[type=text],.ed input[type=number],.ed textarea{width:100%;border:2px solid var(--line);border-radius:10px;padding:10px 12px;background:transparent;color:var(--pink)}
+.ops{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.op{display:flex;align-items:center;gap:8px;border-radius:10px;padding:4px 4px 4px 10px;border-left:8px solid}
+.op input[type=radio]{width:22px;height:22px;accent-color:var(--a3);flex:none}
+.ed label.f{display:block;font-weight:800;font-size:14px;margin:10px 0 4px;color:var(--sub)}
+.thumb{display:flex;gap:12px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.thumb img{width:120px;height:80px;object-fit:cover;border-radius:10px;background:var(--line)}
+.hint{font-size:14px;color:var(--sub)}
+.add{background:var(--bg);color:#fff}
+@media(max-width:760px){.hero{grid-template-columns:1fr}.answers,.ops{grid-template-columns:1fr}.ans{min-height:70px}.row{grid-template-columns:1.6em minmax(0,6em) minmax(0,1fr) 4em;font-size:16px}}
+.join{display:flex;gap:16px;align-items:flex-start;background:rgba(0,0,0,.2);border-radius:18px;padding:14px;margin-top:22px}
+.join h3{font-size:22px}
+#qr{flex:none;background:#fff;padding:8px;border-radius:12px;line-height:0}
+#qr img,#qr canvas{width:132px;height:132px}
+.lpk{display:flex;flex-wrap:wrap;gap:6px}.lpk .gap{width:14px}
+.lp{min-width:40px;min-height:44px;padding:4px 8px;border-radius:10px;background:var(--line);color:var(--pink);font-family:"Lilita One";font-weight:400;font-size:22px}
+.lp.on{background:var(--y);color:#2a0b19;box-shadow:0 3px 0 #b8901b}
+.chip{display:inline-block;background:rgba(255,255,255,.16);border-radius:99px;padding:3px 10px;margin:0 6px 6px 0;font-size:14px;font-weight:800}
+.lnk{background:transparent;color:inherit;text-decoration:underline;padding:4px 0;min-height:36px;font-weight:700;font-size:14px}
+.rvl{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:10px}
+.rv{display:flex;gap:12px;align-items:flex-start;border:2px solid var(--line);border-radius:14px;padding:12px}
+.rv img{width:84px;height:60px;object-fit:cover;border-radius:8px;flex:none}
+.rq{margin:0 0 6px;font-weight:800}
+.sol{display:inline-flex;align-items:center;gap:8px;border-radius:10px;padding:6px 12px;color:#fff;font-weight:900;font-size:18px}
+b.sol{background:var(--y);color:#2a0b19;font-family:"Lilita One";font-weight:400;font-size:22px;letter-spacing:1px}
+.sol svg{width:20px;height:20px}
+.tg.sm{min-height:36px;padding:4px 12px;font-size:14px;background:var(--line);color:var(--pink)}
+.tg.sm.on{background:var(--a3);color:#fff}
+.pt{width:100%;border-collapse:collapse}
+.pt th,.pt td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left}
+.pt th{font-size:14px;color:var(--sub)}
+.pt .n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* móvil del jugador */
+body.phone .wrap{max-width:560px;padding-top:16px}
+.phd{display:flex;justify-content:space-between;align-items:center;font-weight:900;margin-bottom:12px}
+.pc{background:var(--panel);color:var(--pink);border-radius:22px;padding:22px;text-align:center;box-shadow:0 8px 0 rgba(0,0,0,.2)}
+.pc h2{font-size:30px;margin-bottom:8px}
+.pc h2.big{font-size:64px}
+.pc input[type=text]{width:100%;border:2px solid var(--line);border-radius:12px;padding:12px;background:transparent;color:var(--pink);font-size:18px;text-align:center}
+.pc label.f{display:block;font-weight:800;font-size:14px;margin:14px 0 6px;color:var(--sub);text-align:left}
+.pteams .tg{background:var(--line);color:var(--pink)}.pteams .tg.on{background:var(--bg);color:#fff}
+.pq{text-align:center;font-weight:800;margin:0 0 10px}
+.pans{display:grid;gap:12px}
+.pans .ans{width:100%;min-height:84px;font-size:20px}
+.pans .ans.pick{outline:5px solid #fff;outline-offset:-5px}
+.pans .ans.dim{opacity:.45}
+.pat{font-family:"Lilita One";font-size:30px;letter-spacing:6px;margin:14px 0;word-break:break-all}
+.mylist{list-style:none;padding:0;margin:18px 0 0;text-align:left;display:grid;gap:8px}
+.mylist li{display:flex;gap:10px;border-radius:12px;padding:10px;background:var(--line)}
+.mylist p{margin:0}
+.mk{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:900}
+.mylist .g .mk{background:var(--a3)}.mylist .b .mk{background:var(--a0)}
+@media(max-width:600px){.join{flex-direction:column}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><span class="logo" id="logo">Trivial</span><span class="sp"></span>
+    <button class="btn-g" id="bHome" hidden>Inicio</button>
+    <button class="btn-g" id="bEdit">Editar preguntas</button>
+    <button class="btn-g" id="bFull">Pantalla completa</button></div>
+  <main id="app"></main>
+</div>
+<script>
+{
+const KEY='trivial-amiga-v1';
+const SH=[
+ '<svg viewBox="0 0 40 40"><path d="M20 4 37 35H3z" fill="#fff"/></svg>',
+ '<svg viewBox="0 0 40 40"><path d="M20 2 38 20 20 38 2 20z" fill="#fff"/></svg>',
+ '<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#fff"/></svg>',
+ '<svg viewBox="0 0 40 40"><rect x="4" y="4" width="32" height="32" rx="3" fill="#fff"/></svg>'];
+const q=(t,o,ok)=>({q:t,o,ok});
+const SAMPLE={name:'Lucía',secs:20,teams:['Equipo Rojo','Equipo Azul','Equipo Amarillo'],
+ quiz:[q('¿En qué ciudad nació Lucía?',['Córdoba','Sevilla','Granada','Málaga'],0),
+  q('¿Cuál es su comida favorita?',['Sushi','Salmorejo','Pizza','Paella'],1),
+  q('¿Qué estudió?',['Derecho','Magisterio','Enfermería','ADE'],3),
+  q('¿Cómo se llamaba su primera mascota?',['Toby','Luna','Nala','Coco'],3),
+  q('¿Cuál es su serie de cabecera?',['Friends','Aquí no hay quien viva','Élite','La que se avecina'],1),
+  q('¿A qué país viajó por primera vez?',['Francia','Portugal','Italia','Marruecos'],1),
+  q('¿Qué le da más miedo?',['Las arañas','Volar','La oscuridad','Las alturas'],0),
+  q('¿Cuál fue su primer trabajo?',['Camarera','Monitora de campamento','Dependienta','Profesora particular'],1),
+  q('¿Qué canción no puede faltar en su fiesta?',['Una de Bad Bunny','Una de Rosalía','Una de Melendi','Una de Aitana'],2),
+  q('¿Qué haría con un día libre?',['Dormir hasta las 2','Ir a la playa','Maratón de series','Ir de compras'],0)],
+ hang:[{w:'Salmorejo',c:'Se lo pide siempre que salimos a comer'},{w:'Despistada',c:'Lo que dice su madre que es desde pequeña'},
+  {w:'Lisboa',c:'El viaje que siempre recuerda'},{w:'Cafetera',c:'Sin ella no arranca por las mañanas'},{w:'Carcajada',c:'Lo que se le oye desde la otra punta del bar'}],
+ img:[q('¿Dónde está hecha esta foto?',['En Cádiz','En Huelva','En Almería','En Valencia'],0,),
+  q('¿Qué edad tenía en esta foto?',['5 años','8 años','11 años','14 años'],1),
+  q('¿Quién está con ella en la foto?',['Su prima','Su hermana','Su mejor amiga','Su vecina'],1),
+  q('¿De qué iba disfrazada?',['De pirata','De bruja','De gata','De astronauta'],2),
+  q('¿Qué estaba celebrando?',['Su graduación','Su cumpleaños','Nochevieja','Una boda'],0)],
+ vid:{link:'',title:'Su vídeo del viaje',qs:[q('¿Con qué frase empieza el vídeo?',['¡Hola, familia!','Buenos días, gente','¿Qué pasa, chavales?','Holiii'],0),
+  q('¿Qué come en el vídeo?',['Un helado','Unos churros','Una pizza','Un bocadillo'],1),
+  q('¿De qué color es la mochila que lleva?',['Negra','Roja','Amarilla','Azul'],2),
+  q('¿Cuánto dura el vídeo aproximadamente?',['2 minutos','5 minutos','8 minutos','12 minutos'],1),
+  q('¿Con qué se despide?',['Hasta la próxima','Besitos','Chao chao','Nos vemos'],3)]}};
+SAMPLE.img.forEach(x=>x.src='');
+const clone=o=>JSON.parse(JSON.stringify(o));
+let D;try{D=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!D||!D.quiz)D=clone(SAMPLE);D.sample=D.sample??true;
+let videoURL='',saveWarn='';
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(D));saveWarn=''}catch(e){saveWarn='No se ha podido guardar en este navegador (quizá las fotos ocupan demasiado). Usa “Copia de seguridad”.'}};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const app=document.getElementById('app');
+const PH=t=>'data:image/svg+xml,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500"><rect width="800" height="500" fill="#f3dbe5"/><circle cx="560" cy="170" r="60" fill="#ffd23f"/><path d="M0 500 260 220 470 430 590 320 800 500z" fill="#c2185b" opacity=".75"/><text x="400" y="470" text-anchor="middle" font-family="sans-serif" font-size="30" font-weight="800" fill="#6d4a5a">${t}</text></svg>`);
+const BL=[{k:'quiz',n:'Preguntas',d:'Cuatro opciones, solo una es buena.',pts:1000},{k:'hang',n:'Ahorcado',d:'Una pista, unas pocas letras… y a completar la palabra.',pts:1000},{k:'img',n:'Fotos',d:'Mirad bien la imagen y elegid la respuesta.',pts:1000},{k:'vid',n:'La canción',d:'Primero la escuchamos, luego preguntamos. Atentos a los detalles.',pts:1000}];
+let G=null,timer=null,view='home',tab='quiz';
+
+const pathSet=(p,v)=>{const ks=p.split('.');let o=D;ks.slice(0,-1).forEach(k=>o=o[k]);o[ks.at(-1)]=v};
+const pathGet=p=>p.split('.').reduce((o,k)=>o?.[k],D);
+const listOf=k=>k==='vid'?D.vid.qs:D[k];
+
+/* ---------- inicio ---------- */
+function home(){
+  view='home';stopT();G=null;
+  const cnt=[D.quiz.length,D.hang.length,D.img.length,D.vid.qs.length];
+  app.innerHTML=`<section class="hero"><div>
+   <h1>¿Cuánto conoces a <span>${esc(D.name)||'tu amiga'}</span>?</h1>
+   <p class="lead">Cuatro bloques, varios equipos y un marcador que no perdona.</p>
+   <label class="small" style="font-weight:800">Equipos</label>
+   <div class="teams">${D.teams.map((t,i)=>`<span class="team"><input type="text" value="${esc(t)}" data-team="${i}" aria-label="Equipo ${i+1}"><button data-rmteam="${i}" aria-label="Quitar equipo">×</button></span>`).join('')}
+   <button class="btn-g" id="addTeam">+ Equipo</button></div>
+   <button class="btn-y" id="start" style="font-size:22px;padding:14px 34px">Empezar el juego</button>
+   ${D.sample?'<p class="note">Ahora mismo hay preguntas de ejemplo: cámbialas en “Editar preguntas”.</p>':''}
+   ${roomState==='sin'?'':`<div class="join"><div id="qr" aria-label="Código QR para unirse"></div><div><h3>Jugad desde el móvil</h3><p class="small" style="margin:4px 0 8px">Escanead el código o abrid <b>${ART_URL.replace('https://','')}</b> con vuestra cuenta de Claude.</p><div id="plist">${plistHTML()}</div><button class="lnk" id="bPlay">Abrir aquí la vista de jugador</button></div></div>`}
+  </div><div class="board">${BL.map((b,i)=>`<div class="blk c${i}">${SH[i]}<h3>${i+1}. ${b.n}</h3><span><b>${cnt[i]}</b> ${b.k==='hang'?'palabras':'preguntas'}</span></div>`).join('')}</div></section>`;
+  drawQR();pub();
+}
+function drawQR(){const el=document.getElementById('qr');if(!el)return;if(window.QRCode){try{new QRCode(el,{text:ART_URL,width:132,height:132,colorDark:'#2a0b19',colorLight:'#ffffff'})}catch(x){}}else{el.style.display='none'}}
+app.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.dataset.team!=null){D.teams[+t.dataset.team]=t.value;save()}
+  if(t.dataset.p){pathSet(t.dataset.p,t.type==='number'?+t.value:t.value);D.sample=false;{const m=t.dataset.p.match(/^hang\.(\d+)\.w$/);if(m){const h=D.hang[+m[1]];const w=[...h.w];h.show=(h.show||[]).filter(i=>i<w.length&&/\S/.test(w[i]));const el=document.getElementById('lpk'+m[1]);if(el)el.innerHTML=pickTiles(h,+m[1])}}save();if(t.dataset.p==='name')document.getElementById('logo').textContent='Trivial de '+t.value}
+});
+app.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.ok){pathSet(t.dataset.ok,+t.value);D.sample=false;save()}
+  if(t.dataset.img&&t.files[0]){loadImg(t.files[0],src=>{pathSet(t.dataset.img+'.src',src);D.sample=false;save();editor()})}
+  if(t.dataset.vfile!=null&&t.files[0]){if(videoURL)URL.revokeObjectURL(videoURL);videoURL=URL.createObjectURL(t.files[0]);view==='edit'?editor():render()}
+  if(t.id==='imp'&&t.files[0]){const r=new FileReader();r.onload=()=>importJSON(r.result);r.readAsText(t.files[0])}
+});
+function loadImg(f,cb){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const m=1100,s=Math.min(1,m/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=im.width*s;c.height=im.height*s;c.getContext('2d').drawImage(im,0,0,c.width,c.height);cb(c.toDataURL('image/jpeg',.8))};im.src=r.result};r.readAsDataURL(f)}
+function importJSON(txt){try{const n=JSON.parse(txt);if(!n.quiz)throw 0;D=n;D.sample=false;save();msg='Datos cargados.';editor()}catch(e){msg='Ese texto no es una copia de seguridad válida.';editor()}}
+let msg='';
+
+/* ---------- partida ---------- */
+const ART_URL='https://claude.ai/artifact/3x2XG5XfEu7qpoLBrRx23U';
+const norm=s=>String(s??'').normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+const cut=(s,n)=>{s=String(s??'');return s.length>n?s.slice(0,n-1)+'…':s};
+let room=null,gid='g'+Date.now().toString(36),players={},roomState='conectando';
+const livePlayers=()=>Object.values(players);
+function start(){
+  D.teams=D.teams.map(t=>t.trim()).filter(Boolean);if(!D.teams.length)D.teams=['Equipo 1','Equipo 2'];save();
+  gid='g'+Date.now().toString(36);
+  const st=[];
+  BL.forEach((b,bi)=>{const L=listOf(b.k);if(!L.length)return;st.push({t:'intro',bi});if(b.k==='vid')st.push({t:'video',bi});L.forEach((_,k)=>st.push({t:b.k==='hang'?'hang':'q',bi,k}));st.push({t:'end',bi});st.push({t:'score',bi})});
+  st.at(-1).t='final';
+  G={st,i:0,sc:D.teams.map(()=>0),prev:D.teams.map(()=>0),res:{},ps:{},pb:{},names:{}};view='game';render(true);
+}
+function enter(){const s=G.st[G.i];
+  if(s.t==='q'||s.t==='hang'){s.extra=0;G.res[G.i]=G.res[G.i]||{};
+    if(s.t==='hang'&&!s.shown){const h=D.hang[s.k];const w=[...h.w.toUpperCase()];const fix=(h.show||[]).filter(i=>i<w.length&&/\S/.test(w[i]));
+      if(fix.length)s.shown=new Set(fix);else{const idx=w.map((c,i)=>/\S/.test(c)?i:-1).filter(i=>i>=0);const n=Math.min(idx.length-1,idx.length<=5?2:3);s.shown=new Set();while(s.shown.size<Math.max(1,n))s.shown.add(idx[Math.floor(Math.random()*idx.length)])}}
+    if(s.k>0){s.pre=true;s.open=false}else openQ(s)}
+  if(s.t==='end'&&!s.done)scoreBlock(s)}
+function startT(){stopT();const s=G.st[G.i];if(!D.secs||!s.open)return;timer=setInterval(()=>{s.left=Math.max(0,s.left-.1);const el=document.querySelector('.timer');if(el){el.style.setProperty('--p',s.left/D.secs*100);el.firstElementChild.textContent=Math.ceil(s.left)}if(s.left<=0)closeQ()},100)}
+function stopT(){clearInterval(timer);timer=null}
+function openQ(s){s.pre=false;s.open=true;s.left=D.secs;startT()}
+function closeQ(){const s=G.st[G.i];stopT();if(!s.open)return;next()}
+const itemOf=s=>s.t==='hang'?D.hang[s.k]:listOf(BL[s.bi].k)[s.k];
+const blockSteps=bi=>G.st.map((s,i)=>({s,i})).filter(x=>x.s.bi===bi&&(x.s.t==='q'||x.s.t==='hang'));
+function isOk(s,v){const it=itemOf(s);return s.t==='hang'?(typeof v==='string'&&norm(v)!==''&&norm(v)===norm(it.w)):v===it.ok}
+function scoreBlock(e){
+  e.done=true;e.tg={};const bs=blockSteps(e.bi);const pb={};
+  bs.forEach(({s,i})=>{const r=G.res[i]||{};let hits=0;
+    Object.entries(r).forEach(([pid,a])=>{const p=pb[pid]||(pb[pid]={ok:0,tot:bs.length,pts:0});
+      if(isOk(s,a.v)){hits++;p.ok++;p.pts+=s.t==='hang'?Math.max(200,1000-200*(a.x||0)):(D.secs?Math.round(500+500*Math.max(0,a.left)/D.secs):1000)}});
+    s.hits=hits;s.answers=Object.keys(r).length});
+  Object.entries(pb).forEach(([pid,p])=>{G.ps[pid]=(G.ps[pid]||0)+p.pts;const t=G.names[pid]?.team;if(t!=null&&t<G.sc.length)G.sc[t]+=p.pts});
+  G.pb[e.bi]=pb;
+}
+function next(){const s=G.st[G.i];
+  if(s.pre){openQ(s);return render()}
+  if(s.t==='end'&&s.tg)Object.values(s.tg).forEach(set=>set.forEach(t=>G.sc[t]+=1000));
+  if(s.t==='q'||s.t==='hang'){s.open=false;stopT()}
+  if(G.i<G.st.length-1){if(s.t==='score')G.prev=[...G.sc];G.i++;render(true)}}
+const hud=s=>{const L=listOf(BL[s.bi].k);return `<div class="hud"><span class="pill">Bloque ${s.bi+1} · ${BL[s.bi].n}</span>${s.k!=null?`<span class="pill">${s.k+1} / ${L.length}</span>`:''}<div class="mini">${D.teams.map((t,i)=>`<span>${esc(t)}: ${G.sc[i]}</span>`).join('')}</div></div>`};
+const tmr=s=>D.secs&&s.open?`<div class="timer" style="--p:${s.left/D.secs*100}"><i>${Math.ceil(s.left)}</i></div>`:'';
+function cntTxt(){const s=G?.st[G.i];if(!s||!(s.t==='q'||s.t==='hang'))return '';const n=Object.keys(G.res[G.i]||{}).length,m=livePlayers().length;return m||n?`${n} de ${Math.max(n,m)} han respondido`:''}
+const updCnt=()=>{const el=document.getElementById('cnt');if(el)el.textContent=cntTxt()};
+const qctl=s=>`<div class="ctl">${cntTxt()?`<span class="pill" id="cnt">${cntTxt()}</span>`:'<span id="cnt"></span>'}${D.secs&&s.open?`<button class="btn-g" data-act="pause">${timer?'Pausar':'Seguir'}</button>`:''}<button class="btn-y" id="primary" data-act="next">Siguiente</button></div>`;
+function render(fresh){
+  const s=G.st[G.i];if(fresh)enter();
+  if(s.t==='intro'){const b=BL[s.bi];app.innerHTML=`<section class="intro"><div class="num c${s.bi}">${s.bi+1}</div><h1>${b.n}</h1><p>${b.d} Las soluciones se ven al terminar el bloque.</p><button class="btn-y" id="primary" data-act="next" style="font-size:22px;padding:14px 34px">¡Vamos!</button></section>`}
+  else if(s.t==='video'){const v=D.vid;app.innerHTML=`${hud(s)}<div class="qcard"><h2>${esc(v.title)||'La canción'}</h2>
+   ${videoURL?`<video class="vid" src="${videoURL}" controls playsinline></video>`:`<p class="hint" style="margin:18px 0">Elige el archivo de la canción para ponerla aquí${v.link?', o ábrelo desde su enlace':''}.</p>`}
+   <div class="ctl"><label class="btn-g" style="background:var(--line);color:var(--pink);border-radius:14px;padding:10px 18px;font-weight:800;cursor:pointer">${videoURL?'Cambiar canción':'Elegir canción'}<input type="file" accept="audio/*,video/*" data-vfile hidden></label>
+   ${v.link?`<a href="${esc(v.link)}" target="_blank" rel="noopener" style="font-weight:800;color:var(--bg)">Abrir la canción ↗</a>`:''}</div></div>
+   <div class="ctl"><button class="btn-y" id="primary" data-act="next">Escuchada, ¡a las preguntas!</button></div>`}
+  else if(s.pre){app.innerHTML=`${hud(s)}<section class="intro"><div class="num c${s.bi}">${s.k+1}</div><h1>Pregunta ${s.k+1}</h1><p>Preparad el boli.</p><button class="btn-y" id="primary" data-act="next" style="font-size:22px;padding:14px 34px">Siguiente</button></section>`}
+  else if(s.t==='q'){const it=itemOf(s);const im=BL[s.bi].k==='img'?`<img class="qimg" src="${it.src||PH('Foto pendiente de subir')}" alt="">`:'';
+   app.innerHTML=`${hud(s)}<div class="qcard"><div class="qrow"><h2>${esc(it.q)}</h2>${tmr(s)}</div>${im}</div>
+   <div class="answers">${it.o.map((o,i)=>`<div class="ans c${i}"><em class="let">${"ABCD"[i]}</em><span>${esc(o)}</span></div>`).join('')}</div>${qctl(s)}`}
+  else if(s.t==='hang'){const h=itemOf(s);const w=[...h.w.toUpperCase()];
+   app.innerHTML=`${hud(s)}<div class="qcard"><div class="qrow"><h2 style="font-size:clamp(22px,2.6vw,32px)">Pista</h2>${tmr(s)}</div><p class="clue">${esc(h.c)}</p>
+   <div class="word">${w.map((c,i)=>/\s/.test(c)?'<span class="gap"></span>':`<span class="tile ${s.shown.has(i)?'s':''} ${s.last===i?'new':''}">${s.shown.has(i)?esc(c):''}</span>`).join('')}</div>
+   <p class="hint">${w.filter(c=>/\S/.test(c)).length} letras</p></div>${qctl(s)}`}
+  else if(s.t==='end')renderEnd(s);
+  else renderScore(s);
+  pub();
+}
+function renderEnd(e){
+  const bs=blockSteps(e.bi),pl=Object.keys(G.pb[e.bi]||{}).length>0||livePlayers().length>0;
+  const rows=bs.map(({s},n)=>{const it=itemOf(s);const ans=s.t==='hang'?`<b class="sol">${esc(it.w)}</b>`:`<span class="sol c${it.ok}"><em class="let">${"ABCD"[it.ok]}</em>${esc(it.o[it.ok])}</span>`;
+    const set=e.tg[n]||(e.tg[n]=new Set());
+    return `<li class="rv">${s.t==='q'&&it.src?`<img src="${it.src}" alt="">`:''}<div><p class="rq">${n+1}. ${esc(s.t==='hang'?it.c:it.q)}</p>${ans}
+    ${pl?`<p class="hint" style="margin:6px 0 0">${s.hits||0} de ${s.answers||0} acertaron</p>`:`<div style="margin-top:6px">${D.teams.map((t,i)=>`<button class="tg sm ${set.has(i)?'on':''}" data-tg="${n}.${i}">${esc(t)}</button>`).join('')}</div>`}</div></li>`}).join('');
+  const pb=G.pb[e.bi]||{};const ranking=Object.entries(pb).sort((a,b)=>b[1].pts-a[1].pts);
+  app.innerHTML=`${hud(e)}<div class="qcard" style="text-align:left"><h2>Soluciones del bloque ${e.bi+1}</h2>
+   ${pl?'':'<p class="hint">Nadie ha jugado con el móvil: marca qué equipos acertaron cada una (1000 puntos).</p>'}<ol class="rvl">${rows}</ol>
+   ${ranking.length?`<h3 style="font-size:24px;margin:22px 0 8px">Aciertos de cada uno</h3><table class="pt"><thead><tr><th>Jugador</th><th>Equipo</th><th class="n">Aciertos</th><th class="n">Puntos</th></tr></thead><tbody>${ranking.map(([pid,p])=>`<tr><td>${esc(G.names[pid]?.name||'Jugador')}</td><td>${esc(D.teams[G.names[pid]?.team]||'')}</td><td class="n">${p.ok} / ${p.tot}</td><td class="n">${p.pts}</td></tr>`).join('')}</tbody></table>`:''}</div>
+   <div class="ctl"><button class="btn-y" id="primary" data-act="next">Ver marcador</button></div>`;
+}
+function renderScore(s){const mx=Math.max(1,...G.sc);const ord=D.teams.map((t,i)=>({t,i,p:G.sc[i]})).sort((a,b)=>b.p-a.p);
+  const top=Object.entries(G.ps).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const tops=top.length?`<h3 style="font-size:26px;text-align:center;margin:28px 0 10px">Mejores jugadores</h3><table class="pt" style="max-width:520px;margin:0 auto;background:var(--panel);color:var(--pink);border-radius:16px"><tbody>${top.map(([pid,p],n)=>`<tr><td>${n+1}º</td><td>${esc(G.names[pid]?.name||'Jugador')}</td><td class="n">${p}</td></tr>`).join('')}</tbody></table>`:'';
+  if(s.t==='final'){const tp=ord.slice(0,3);const pos=[1,0,2].filter(x=>tp[x]);const hh=[150,210,110];
+   app.innerHTML=`<section class="score"><h1>¡${esc(ord[0].t)} conoce mejor a ${esc(D.name)}!</h1><div class="podium">${pos.map(x=>`<div class="pod"><p>${esc(tp[x].t)}<br><span class="small">${tp[x].p} puntos</span></p><div class="c${x}" style="height:${hh[x]}px">${x+1}</div></div>`).join('')}</div>
+   ${ord.map((o,n)=>`<div class="row"><span>${n+1}º</span><span>${esc(o.t)}</span><span class="bar"><i style="width:${o.p/mx*100}%"></i></span><span class="pts">${o.p}</span></div>`).join('')}${tops}
+   <div class="ctl"><button class="btn-y" data-act="again">Jugar otra vez</button><button class="btn-g" data-act="home">Volver al inicio</button></div></section>`;return}
+  app.innerHTML=`<section class="score"><h1>Marcador tras el bloque ${s.bi+1}</h1>${ord.map((o,n)=>`<div class="row"><span>${n+1}º</span><span>${esc(o.t)}</span><span class="bar"><i data-w="${o.p/mx*100}" style="width:${G.prev[o.i]/mx*100}%"></i></span><span class="pts">${o.p}</span></div>`).join('')}${tops}
+  <div class="ctl"><button class="btn-y" id="primary" data-act="next">Siguiente bloque</button></div></section>`;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelectorAll('[data-w]').forEach(b=>b.style.width=b.dataset.w+'%')))}
+
+/* ---------- conexión con los móviles (pantalla principal) ---------- */
+function hostState(){
+  if(!G||view!=='game')return {g:gid,t:'lobby',teams:D.teams.slice(0,8).map(t=>cut(t,24)),name:cut(D.name,30)};
+  const s=G.st[G.i];const h={g:gid,t:s.pre?'pre':s.t,i:G.i,bi:s.bi,blk:BL[s.bi].n,teams:D.teams.slice(0,8).map(t=>cut(t,24)),name:cut(D.name,30)};
+  if(s.pre)h.k=s.k;
+  else if(s.t==='q'){h.open=!!s.open;h.k=s.k;if(s.open)h.o=itemOf(s).o.map(o=>cut(o,50))}
+  else if(s.t==='hang'){h.open=!!s.open;h.k=s.k;if(s.open){const w=[...itemOf(s).w.toUpperCase()];h.clue=cut(itemOf(s).c,120);h.pat=w.map((c,i)=>/\s/.test(c)?' ':s.shown.has(i)?c:'_').join('')}}
+  if(s.t==='end'){h.key=blockSteps(s.bi).map(({s:x,i})=>{const it=itemOf(x);return x.t==='hang'?[i,cut(it.c,60),-1,cut(it.w,40)]:[i,cut(it.q,60),it.ok,"ABCD"[it.ok]+") "+cut(it.o[it.ok],40)]});
+    h.res={};Object.entries(G.pb[s.bi]||{}).forEach(([pid,p])=>h.res[pid]=[p.ok,p.tot,p.pts,G.ps[pid]||0])}
+  if(s.t==='score'||s.t==='final'){h.sc=G.sc;h.res={};const ord=Object.entries(G.ps).sort((a,b)=>b[1]-a[1]);ord.forEach(([pid,p],n)=>h.res[pid]=[n+1,ord.length,p])}
+  return h}
+let lastPub='';
+function pub(){if(!room||role!=='host')return;const h=hostState();const j=JSON.stringify(h);if(j===lastPub)return;lastPub=j;room.presence({role:'host',h}).catch(()=>{room.presence({role:'host',h:{...h,key:null}}).catch(()=>{})})}
+function onHostPeers(ch){
+  const np={};
+  ch.peers.forEach(p=>{const r=p.presence||{};if(r.role!=='p'||typeof r.pid!=='string')return;
+    const team=Number.isInteger(r.team)&&r.team>=0&&r.team<D.teams.length?r.team:null;
+    np[r.pid]={name:cut(r.name||'Jugador',20),team};
+    if(G){G.names[r.pid]=np[r.pid];const s=G.st[G.i];
+      if(s.open&&r.g===gid&&r.a&&r.a[G.i]!=null){const v=r.a[G.i];const rec=G.res[G.i];
+        if(!rec[r.pid]||JSON.stringify(rec[r.pid].v)!==JSON.stringify(v))rec[r.pid]={v,left:s.left,x:s.extra}}}});
+  players=np;
+  if(view==='home'){const el=document.getElementById('plist');if(el)el.innerHTML=plistHTML()}
+  if(G&&view==='game'){updCnt();const s=G.st[G.i];const m=livePlayers().length;if(s.open&&m&&Object.keys(G.res[G.i]).length>=m)closeQ()}
+}
+const plistHTML=()=>{const L=livePlayers();if(!room)return `<p class="small">${roomState==='sin'?'En esta vista no se pueden conectar móviles.':'Conectando…'}</p>`;
+  return L.length?`<p class="small" style="margin:0 0 6px"><b>${L.length}</b> conectados</p>`+L.map(p=>`<span class="chip">${esc(p.name)}${p.team!=null?` · ${esc(D.teams[p.team]||'')}`:''}</span>`).join(''):'<p class="small">Todavía no se ha unido nadie.</p>'};
+/* ---------- móvil del jugador ---------- */
+let nameDraft=null,role='host',H=null,me=null,mine={},mineTxt={},myG=null,curBi=null,aBlock={},draft='',pKey='';
+try{me=JSON.parse(localStorage.getItem('trivial-me'))}catch(e){}
+let pid;try{pid=localStorage.getItem('trivial-pid')}catch(e){}
+if(!pid){pid='p'+Math.random().toString(36).slice(2,10);try{localStorage.setItem('trivial-pid',pid)}catch(e){}}
+function becomePlayer(){role='player';view='play';stopT();document.body.classList.add('phone');document.querySelector('.top').style.display='none';pRender(true)}
+function pPub(){if(!room||!me)return;room.presence({role:'p',pid,name:cut(me.name,20),team:me.team,g:myG,a:aBlock}).catch(()=>{})}
+function onPlayerPeers(ch){
+  const hs=ch.peers.filter(p=>p.presence&&p.presence.role==='host'&&p.presence.h).sort((a,b)=>b.updatedAt-a.updatedAt);
+  const nh=hs[0]?.presence.h||null;
+  if(nh&&nh.g!==myG){myG=nh.g;mine={};mineTxt={};aBlock={};curBi=null;pPub()}
+  if(nh&&nh.bi!=null&&nh.bi!==curBi){curBi=nh.bi;aBlock={};pPub()}
+  H=nh;pRender();
+}
+function pRender(force){
+  const k=JSON.stringify([H,me,mine[H?.i],!!room,roomState]);if(!force&&k===pKey)return;pKey=k;
+  const inp=document.getElementById('hin');const wasF=inp&&document.activeElement===inp;if(inp)draft=inp.value;const pn=document.getElementById('pname');if(pn)nameDraft=pn.value;
+  let h='';
+  if(!room)h=`<div class="pc"><h2>${roomState==='sin'?'No se puede conectar':'Conectando…'}</h2>${roomState==='sin'?'<p>Para jugar desde el móvil tienes que abrir este enlace con tu cuenta de Claude, y quien organiza tiene que haberte invitado a la página.</p>':''}</div>`;
+  else if(!me||!me.ok){const teams=H?.teams||[];h=`<div class="pc"><h2>¡A jugar!</h2><label class="f">Tu nombre</label><input type="text" id="pname" maxlength="20" value="${esc(nameDraft??me?.name??'')}" placeholder="Cómo te llamas">
+     <label class="f">Tu equipo</label>${teams.length?`<div class="pteams">${teams.map((t,i)=>`<button class="tg ${me?.team===i?'on':''}" data-pteam="${i}">${esc(t)}</button>`).join('')}</div>`:'<p class="hint">Esperando a la pantalla principal…</p>'}
+     <button class="btn-y" id="pjoin" style="width:100%;margin-top:16px">Entrar</button></div>`}
+  else if(!H)h=`<div class="pc"><h2>Hola, ${esc(me.name)}</h2><p>Esperando a la pantalla principal…</p></div>`;
+  else{const tn=H.teams?.[me.team]||'';const head=`<div class="phd"><span>${esc(me.name)}${tn?` · ${esc(tn)}`:''}</span><button class="lnk" data-act="pleave">Cambiar</button></div>`;
+    const t=H.t;
+    if(t==='lobby')h=head+`<div class="pc"><h2>¡Ya estás dentro!</h2><p>En cuanto empiece el juego, las preguntas aparecerán aquí. Mira la pantalla grande.</p></div>`;
+    else if(t==='intro')h=head+`<div class="pc c${H.bi}" style="color:#fff"><p class="small">Bloque ${H.bi+1}</p><h2>${esc(H.blk)}</h2><p>Atent@ a la pantalla.</p></div>`;
+    else if(t==='video')h=head+`<div class="pc"><h2>Escuchad la canción</h2><p>Después vienen las preguntas sobre ella. Fíjate en los detalles.</p></div>`;
+    else if(t==='pre')h=head+`<div class="pc c${H.bi}" style="color:#fff"><p class="small">Bloque ${H.bi+1}</p><h2 class="big">Pregunta ${H.k+1}</h2><p>¡Atent@!</p></div>`;
+    else if(t==='q'){const a=mine[H.i];
+      h=head+(H.open?`<p class="pq">Pregunta ${H.k+1} · elige en la pantalla grande</p><div class="pans">${(H.o||[]).map((o,i)=>`<button class="ans c${i} ${a===i?'pick':a!=null?'dim':''}" data-pa="${i}"><em class="let">${"ABCD"[i]}</em><span>${esc(o)}</span></button>`).join('')}</div><p class="hint" style="color:#fff;text-align:center">${a!=null?'Respuesta enviada. Puedes cambiarla hasta que se cierre.':'Cuanto antes contestes, más puntos.'}</p>`
+        :`<div class="pc"><h2>Respuestas cerradas</h2><p>${a!=null?`Tu respuesta: <b>${esc(mineTxt[H.i])}</b>`:'No has contestado esta.'}</p><p class="hint">Las soluciones, al final del bloque.</p></div>`)}
+    else if(t==='hang'){const a=mine[H.i];
+      h=head+(H.open?`<div class="pc"><p class="small">Palabra ${H.k+1}</p><h2 style="font-size:24px">${esc(H.clue)}</h2><p class="pat">${esc(H.pat).replace(/ /g,'&nbsp;&nbsp;')}</p>
+        <input type="text" id="hin" autocomplete="off" autocapitalize="characters" placeholder="Escribe la palabra" value="${esc(draft)}"><button class="btn-y" data-act="hsend" style="width:100%;margin-top:10px">${a!=null?'Cambiar respuesta':'Enviar'}</button>
+        ${a!=null?`<p class="hint">Enviada: <b>${esc(a)}</b></p>`:''}</div>`
+        :`<div class="pc"><h2>Respuestas cerradas</h2><p>${a!=null?`Tu respuesta: <b>${esc(a)}</b>`:'No has contestado esta.'}</p><p class="hint">La solución, al final del bloque.</p></div>`)}
+    else if(t==='end'){const r=H.res?.[pid];const key=H.key||[];
+      const ok=key.filter(([i,,ai,at])=>ai>=0?mine[i]===ai:norm(mine[i])!==''&&norm(mine[i])===norm(at)).length;
+      h=head+`<div class="pc"><p class="small">Bloque ${H.bi+1} · ${esc(H.blk)}</p><h2 class="big">${r?r[0]:ok} de ${r?r[1]:key.length}</h2><p>${(r?r[0]:ok)===(r?r[1]:key.length)?'¡Pleno! Nadie la conoce como tú.':'aciertos en este bloque'}${r?` · <b>${r[2]}</b> puntos`:''}</p>
+       <ol class="mylist">${key.map(([i,q,ai,at])=>{const v=mine[i];const good=ai>=0?v===ai:norm(v)!==''&&norm(v)===norm(at);const yours=ai>=0?(v!=null?mineTxt[i]:''):(v||'');
+         return `<li class="${good?'g':'b'}"><span class="mk">${good?'✓':'✗'}</span><div><p>${esc(q)}</p><p class="hint">Correcta: <b>${esc(at)}</b>${good?'':` · Tú: ${yours?esc(yours):'sin respuesta'}`}</p></div></li>`}).join('')}</ol></div>`}
+    else if(t==='score'||t==='final'){const r=H.res?.[pid];const sc=H.sc||[];const tp=[...sc.keys()].sort((a,b)=>sc[b]-sc[a]).indexOf(me.team)+1;
+      h=head+`<div class="pc"><p class="small">${t==='final'?'¡Fin del juego!':'Marcador'}</p>${r?`<h2 class="big">${r[0]}º</h2><p>de ${r[1]} jugadores, con <b>${r[2]}</b> puntos</p>`:'<h2>Mira la pantalla</h2>'}${tp>0?`<p>Tu equipo va <b>${tp}º</b> con ${sc[me.team]} puntos</p>`:''}</div>`}
+  }
+  app.innerHTML=h;
+  const ni=document.getElementById('hin');if(ni&&wasF){ni.focus();ni.setSelectionRange(ni.value.length,ni.value.length)}
+}
+function pAnswer(v,txt){if(!H||!H.open)return;mine[H.i]=v;mineTxt[H.i]=txt;aBlock={...aBlock,[H.i]:v};pPub();pRender(true)}
+/* ---------- editor ---------- */
+function opEd(p,it){return `<div class="ops">${it.o.map((o,i)=>`<label class="op" style="border-color:var(--a${i})"><input type="radio" name="${p}" value="${i}" data-ok="${p}.ok" ${it.ok===i?'checked':''} aria-label="Correcta"><input type="text" value="${esc(o)}" data-p="${p}.o.${i}" placeholder="Opción ${i+1}"></label>`).join('')}</div><p class="hint" style="margin:6px 0 0">Marca el círculo de la respuesta correcta.</p>`}
+function pickTiles(h,k){const sh=new Set(h.show||[]);return [...String(h.w||'').toUpperCase()].map((c,i)=>/\s/.test(c)?'<span class="gap"></span>':`<button type="button" class="lp ${sh.has(i)?'on':''}" data-sl="${k}.${i}" aria-pressed="${sh.has(i)}">${esc(c)}</button>`).join('')||'<span class="hint">Escribe primero la palabra.</span>'}
+function editor(){
+  view='edit';stopT();
+  const T=[['quiz','1. Preguntas'],['hang','2. Ahorcado'],['img','3. Fotos'],['vid','4. Canción'],['set','Ajustes y copia']];
+  let body='';
+  if(tab==='quiz'||tab==='img'||tab==='vid'){const base=tab==='vid'?'vid.qs':tab;const L=pathGet(base);
+    if(tab==='vid')body+=`<div class="it"><div class="ith">La canción</div><label class="f">Título que se verá</label><input type="text" value="${esc(D.vid.title)}" data-p="vid.title">
+     <label class="f">Enlace a la canción (Spotify, YouTube…)</label><input type="text" value="${esc(D.vid.link)}" data-p="vid.link" placeholder="https://…">
+     <label class="f">Archivo de la canción (audio o vídeo) para reproducirla dentro del juego</label><input type="file" accept="audio/*,video/*" data-vfile> <span class="hint">${videoURL?'Canción cargada.':'Las canciones no se guardan: elígela otra vez el día del juego.'}</span></div>`;
+    body+=L.map((it,k)=>`<div class="it"><div class="ith">Pregunta ${k+1}<button data-del="${base}.${k}">Quitar</button></div>
+     <input type="text" value="${esc(it.q)}" data-p="${base}.${k}.q" placeholder="Escribe la pregunta">
+     ${tab==='img'?`<div class="thumb"><img src="${it.src||PH('Sin foto')}" alt=""><label class="f" style="margin:0">Foto <input type="file" accept="image/*" data-img="img.${k}"></label></div>`:''}
+     ${opEd(`${base}.${k}`,it)}</div>`).join('')+`<button class="add" data-add="${base}">+ Añadir pregunta</button>`}
+  if(tab==='hang')body=D.hang.map((h,k)=>`<div class="it"><div class="ith">Palabra ${k+1}<button data-del="hang.${k}">Quitar</button></div>
+     <label class="f">Palabra o frase corta</label><input type="text" value="${esc(h.w)}" data-p="hang.${k}.w">
+     <label class="f">Letras que se ven al principio (toca para elegirlas)</label><div class="lpk" id="lpk${k}">${pickTiles(h,k)}</div>
+     <label class="f">Pista (definición o frase)</label><input type="text" value="${esc(h.c)}" data-p="hang.${k}.c"></div>`).join('')+`<p class="hint">Si en una palabra no eliges ninguna letra, saldrán 2 o 3 al azar.</p><button class="add" data-add="hang">+ Añadir palabra</button>`;
+  if(tab==='set')body=`<div class="it"><label class="f">Nombre de la homenajeada</label><input type="text" value="${esc(D.name)}" data-p="name">
+     <label class="f">Segundos por pregunta (0 = sin tiempo)</label><input type="number" min="0" max="120" value="${D.secs}" data-p="secs"></div>
+    <div class="it"><div class="ith">Copia de seguridad</div><p class="hint">Todo se guarda solo en este navegador. Para pasarlo a otro ordenador, copia los datos y cárgalos allí.</p>
+     <div class="ctl" style="justify-content:flex-start"><button class="add" data-act="copy">Copiar datos</button><button class="add" data-act="reset">Volver al ejemplo</button></div>
+     <label class="f">Pegar datos copiados</label><textarea id="paste" rows="3"></textarea><div class="ctl" style="justify-content:flex-start"><button class="add" data-act="load">Cargar datos</button></div></div>`;
+  app.innerHTML=`<div class="ed"><div class="tabs">${T.map(([k,n])=>`<button data-tab="${k}" class="${tab===k?'on':''}">${n}</button>`).join('')}</div>
+   ${msg||saveWarn?`<p style="font-weight:800;color:var(--a0)">${esc(msg||saveWarn)}</p>`:''}${body}
+   <div class="ctl"><button class="btn-y" data-act="home">Listo</button></div></div>`;msg='';
+}
+
+/* ---------- eventos ---------- */
+let pTeam=null;
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;const a=b.dataset.act;
+  if(role==='player'){
+    if(b.dataset.pteam!=null){pTeam=+b.dataset.pteam;const pn=document.getElementById('pname');if(pn)nameDraft=pn.value;me={...(me||{}),team:pTeam,ok:false};pRender(true);return}
+    if(b.id==='pjoin'){const n=(document.getElementById('pname')?.value||'').trim();const t=pTeam??me?.team;
+      if(!n){document.getElementById('pname')?.focus();return}
+      if(H?.teams?.length&&(t==null||t>=H.teams.length)){b.textContent='Elige un equipo';return}
+      me={name:cut(n,20),team:t??0,ok:true};try{localStorage.setItem('trivial-me',JSON.stringify(me))}catch(x){}pPub();pRender(true);return}
+    if(a==='pleave'){me={...me,ok:false};pTeam=me.team;nameDraft=me.name;pRender(true);return}
+    if(b.dataset.pa!=null){const i=+b.dataset.pa;return pAnswer(i,'ABCD'[i]+') '+(H?.o?.[i]||''))}
+    if(a==='hsend'){const v=(document.getElementById('hin')?.value||'').trim();if(v){draft=v;pAnswer(cut(v,40),v)}return}
+    return}
+  if(b.id==='start')return start();
+  if(b.id==='addTeam'){D.teams.push('Equipo '+(D.teams.length+1));save();return home()}
+  if(b.dataset.rmteam!=null){D.teams.splice(+b.dataset.rmteam,1);save();return home()}
+  if(b.id==='bHome')return home();
+  if(b.id==='bEdit')return editor();
+  if(b.id==='bFull'){try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{})}catch(x){}return}
+  if(b.id==='bPlay'){becomePlayer();return}
+  if(b.dataset.tab){tab=b.dataset.tab;return editor()}
+  if(b.dataset.sl){const [k,i]=b.dataset.sl.split('.').map(Number);const h=D.hang[k];const set=new Set(h.show||[]);set.has(i)?set.delete(i):set.add(i);h.show=[...set].sort((a,b)=>a-b);D.sample=false;save();document.getElementById('lpk'+k).innerHTML=pickTiles(h,k);return}
+  if(b.dataset.del){const ks=b.dataset.del.split('.');const k=+ks.pop();pathGet(ks.join('.')).splice(k,1);D.sample=false;save();return editor()}
+  if(b.dataset.add){const L=pathGet(b.dataset.add);L.push(b.dataset.add==='hang'?{w:'',c:''}:{q:'',o:['','','',''],ok:0,src:''});save();editor();app.querySelectorAll('.it').item(app.querySelectorAll('.it').length-1)?.scrollIntoView({block:'center'});return}
+  if(b.dataset.tg){const [n,t]=b.dataset.tg.split('.').map(Number);const set=G.st[G.i].tg[n];set.has(t)?set.delete(t):set.add(t);b.classList.toggle('on');return}
+  if(a==='next')return next();
+  if(a==='close')return closeQ();
+  if(a==='pause'){timer?stopT():startT();return render()}
+  if(a==='again')return start();
+  if(a==='home')return home();
+  if(a==='copy'){navigator.clipboard.writeText(JSON.stringify(D)).then(()=>{msg='Copiado. Guárdalo en una nota o mándatelo.';editor()},()=>{msg='El navegador no deja copiar aquí.';editor()});return}
+  if(a==='reset'){D=clone(SAMPLE);save();msg='Se han restaurado las preguntas de ejemplo.';return editor()}
+  if(a==='load')return importJSON(document.getElementById('paste').value);
+});
+document.addEventListener('keydown',e=>{
+  if(role==='player'){if(e.key==='Enter'&&e.target.id==='hin'){e.preventDefault();document.querySelector('[data-act=hsend]')?.click()}return}
+  if(view!=='game'||/INPUT|TEXTAREA/.test(e.target.tagName))return;
+  if(e.key===' '||e.key==='Enter'||e.key==='ArrowRight'){const p=document.getElementById('primary');if(p){e.preventDefault();p.click()}}
+});
+const syncTop=()=>{document.getElementById('bHome').hidden=view==='home'||role==='player';document.getElementById('logo').textContent='Trivial de '+(D.name||'mi amiga')};
+new MutationObserver(syncTop).observe(app,{childList:true});
+const wantPlayer=location.hash==='#jugar';
+if(wantPlayer)becomePlayer();else home();
+(async()=>{
+  try{const user=await claude.use('user');if(user&&!user.isOwner()&&role!=='player')becomePlayer()}catch(x){}
+  try{room=await claude.use('room')}catch(x){room=null}
+  if(!room){roomState='sin';role==='player'?pRender(true):(view==='home'&&home());return}
+  roomState='ok';
+  room.onPeers(ch=>{role==='player'?onPlayerPeers(ch):onHostPeers(ch)},()=>{roomState='sin';room=null;role==='player'?pRender(true):(view==='home'&&home())});
+  if(role==='player'){pRender(true);pPub()}else{pub();if(view==='home')home()}
+})();
+}
+</script>
+</body>
+</html>
